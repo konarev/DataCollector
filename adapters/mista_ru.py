@@ -1,17 +1,26 @@
 import sys
 
 from dateutil import parser as dateparser
+from dataclasses import dataclass, field
 
 # pylint: disable=C0413
 from scrapy.selector import Selector
 
-sys.path.append("../rss_service")
+if __name__ == "__main__":
+    sys.path.append("../rss_service")
 
-from rssfeed import RSSFeed  # pylint: disable=C0413
+from datapipeline import DataPipeline, Item  # pylint: disable=C0413
 import utils
 
 
-class Forum(RSSFeed):
+@dataclass
+class MistaItem(Item):
+    forum: str = field(default_factory=str)
+    section: str = field(default_factory=str)
+    page: int = field(default=1)
+
+
+class Forum(DataPipeline):
     page_url = "https://forum.mista.ru"
     favicon_url = "https://forum.mista.ru/favicon.ico"
     description = "Форум Mista.ru"
@@ -49,6 +58,15 @@ class Forum(RSSFeed):
                     .css("div.message-info::text")
                     .get()
                 )
+                yield MistaItem(
+                    guid,
+                    url=link,
+                    title=title,
+                    tags=(forum, section),
+                    description=description,
+                    page=page_num,
+                )
+
                 yield dict(
                     link=link,
                     title=title,
@@ -61,6 +79,7 @@ class Forum(RSSFeed):
                     description=description,
                     pubDate=pub_date,
                     guid=guid,
+                    page=page_num,
                 )
 
 
@@ -102,5 +121,5 @@ class ForumIT(Forum):
 export = [Forum(), Forum1C(), ForumIT(), ForumJob(), ForumLife()]
 
 if __name__ == "__main__":
-    feed = Forum().generate()
-    print(feed)
+    for item in Forum().items():
+        print(item)

@@ -3,12 +3,14 @@ from collections import defaultdict
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from rssfeed import RSSFeed
-from template import HTMLTemplate, XMLTemplate, cdata, date2rfc822
+# from rssfeed import RSSFeed
+from datapipeline import DataPipeline
+from generator import HTMLGenerator, XMLGenerator
+from utils import date2rfc822
 
 
-class RSSRequestHandler(BaseHTTPRequestHandler):
-    feeds: dict[str, RSSFeed] = {}
+class RequestHandler(BaseHTTPRequestHandler):
+    feeds: dict[str, DataPipeline] = {}
 
     def server_url(self) -> str:
         server_addr = self.server.socket.getsockname()
@@ -20,7 +22,7 @@ class RSSRequestHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
-            template = HTMLTemplate()
+            template = HTMLGenerator()
             template.begin()
             template.node("title", "RSS feeds catalog")
             for href, item in self.feeds.items():
@@ -48,7 +50,7 @@ def export2opml(feeds: list[RSSFeed], server_url: str) -> str:
     for feed in feeds:
         modules[feed.__module__].append(feed)
 
-    template = XMLTemplate()
+    template = XMLGenerator()
     template.begin()
     if template.node_open("opml", attr='version="2.0"'):
         if template.node_open("head"):
@@ -89,34 +91,34 @@ if __name__ == "__main__":
     server_address = ("localhost", 8080)
 
     server_address_str = server_url(*server_address)
-    for adapter in adapters.load_feeds(os.getcwd() + "/adapters"):
-        RSSRequestHandler.feeds[adapter.url()] = adapter
+    for adapter in adapters.load_list_pipeline(os.getcwd() + "/adapters"):
+        RequestHandler.feeds[adapter.url()] = adapter
         print(
             f"Loaded adapter {adapter.title} url='{adapter.page_url}'"
             f" feed_url='{server_address_str}{adapter.url()}'"
         )
 
-    if not RSSRequestHandler.feeds:
+    if not RequestHandler.feeds:
         print("Not found RSS adapter.")
         sys.exit()
 
-    opmlfile = "generator.opml"
-    if os.path.exists(opmlfile):
-        os.remove(opmlfile)
+    opml_file = "generator.opml"
+    if os.path.exists(opml_file):
+        os.remove(opml_file)
 
     # server_address = ("localhost", 8080)
     try:
-        with open(opmlfile, "w", encoding="utf-8") as f:
+        with open(opml_file, "w", encoding="utf-8") as f:
             f.write(
                 export2opml(
-                    list(RSSRequestHandler.feeds.values()),
+                    list(RequestHandler.feeds.values()),
                     server_address_str,
                 )
             )
     except FileExistsError as err:
         pass
 
-    webServer = HTTPServer(server_address, RSSRequestHandler)
+    webServer = HTTPServer(server_address, RequestHandler)
 
     print(f"Server started {webServer.socket.getsockname()}")
 

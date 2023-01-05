@@ -1,3 +1,7 @@
+from typing import Any
+from datetime import datetime
+
+
 def strip_tag(instr: str) -> str:
     if (pos := instr.find(">")) != -1:
         instr = instr[pos + 1 :]
@@ -32,7 +36,8 @@ def parse_url(url: str) -> tuple[list[str], dict[str, str]]:
     )
 
 
-from typing import Any
+def date2rfc822(date: datetime) -> str:
+    return datetime.strftime(date, "%a, %d %b %Y %H:%M:%S")
 
 
 def merge_url(url: str | list[str], params: dict[str, Any]) -> str:

@@ -4,11 +4,11 @@ import os
 import os.path
 from typing import Iterable
 
-from rssfeed import RSSFeed
+from datapipeline import DataPipeline
 
 
-def load_next_feed(adapters_folder: str) -> Iterable[RSSFeed]:
-    feed_already_loaded = set()
+def load_next_pipeline(adapters_folder: str) -> Iterable[DataPipeline]:
+    # module_already_loaded = set()
     for root, _, files in os.walk(adapters_folder):
         for file in files:
             if not file.endswith(".py"):
@@ -28,23 +28,23 @@ def load_next_feed(adapters_folder: str) -> Iterable[RSSFeed]:
             if not (export := getattr(module_loaded, "export", None)):
                 del module_loaded
                 continue
-            feed_obj: RSSFeed
-            for feed_obj in export:
-                if type(feed_obj) in feed_already_loaded:
-                    print(
-                        f"Feed with type {type(feed_obj)} already loaded. {feed_obj} not accepted"
-                    )
-                    del feed_obj
-                    continue
-                feed_already_loaded.add(type(feed_obj))
-                yield feed_obj
+            # pipeline: DataPipeline
+            # for pipeline in export:
+            # if type(pipeline) in module_already_loaded:
+            #     print(
+            #         f"Data pipeline with type {type(pipeline)} already loaded. {pipeline} not accepted"
+            #     )
+            #     del pipeline
+            #    continue
+            # module_already_loaded.add(type(pipeline))
+            yield from export
 
 
-def load_feeds(adapters_folder: str) -> list[RSSFeed]:
-    return list(load_next_feed(adapters_folder))
+def load_list_pipeline(adapters_folder: str) -> list[DataPipeline]:
+    return list(load_next_pipeline(adapters_folder))
 
 
 if __name__ == "__main__":
-    adapters = load_feeds(os.getcwd() + "/adapters")
+    adapters = load_list_pipeline(os.getcwd() + "/adapters")
     for adapter in adapters:
         print(adapter)
