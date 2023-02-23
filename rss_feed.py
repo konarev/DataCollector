@@ -1,7 +1,7 @@
 from datetime import datetime
 from utils import date2rfc822
 from generator import RSSGenerator, cdata
-from datapipeline import DataPipeline
+from page import Page
 
 
 USE_USERTAG: bool = True
@@ -9,9 +9,9 @@ USE_USERTAG: bool = True
 
 class RSSFeed(RSSGenerator):
     accept_flows = ["InfoFlow"]  # or accept_flows = [InfoFlow]
-    pipeline: DataPipeline
+    pipeline: Page
 
-    def __init__(self, pipeline: DataPipeline):
+    def __init__(self, pipeline: Page):
         super().__init__()
         self.pipeline = pipeline
 
@@ -19,6 +19,7 @@ class RSSFeed(RSSGenerator):
         return "/rss/" + self.__class__.__name__ + "." + self.__module__ + "/feed"
 
     def generate(self) -> str:
+
         _pipeline = self.pipeline
         self.begin()
         if self.node_open("channel"):

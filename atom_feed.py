@@ -1,7 +1,7 @@
 from datetime import datetime
 from utils import date2rfc822
 from generator import AtomGenerator, cdata
-from datapipeline import DataPipeline
+from page import Page
 
 
 USE_USERTAG: bool = True
@@ -9,9 +9,9 @@ USE_USERTAG: bool = True
 
 class AtomFeed(AtomGenerator):
     accept_flows = ["InfoFlow"]  # or accept_flows = [InfoFlow]
-    pipeline: DataPipeline
+    pipeline: Page
 
-    def __init__(self, pipeline: DataPipeline):
+    def __init__(self, pipeline: Page):
         super().__init__()
         self.pipeline = pipeline
 

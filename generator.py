@@ -78,6 +78,9 @@ class XMLGenerator:
         raise NotImplementedError
 
 
+from functools import partialmethod
+
+
 class RSSGenerator(XMLGenerator):
     def begin(self):
         super().begin()
@@ -90,6 +93,8 @@ class RSSGenerator(XMLGenerator):
             },
         )
 
+    set_title = partialmethod(XMLGenerator.node, "title")
+
     def header(self) -> dict[str, object]:
         raise NotImplementedError
 
@@ -97,8 +102,9 @@ class RSSGenerator(XMLGenerator):
         _head = self.header()
         self.begin()
         self.node("title", cdata(_head["title"]))
+        self.set_title(cdata(_head["title"]))
         self.node("link", cdata(_pipeline.page_url))
-        self.node("description", cdata(_pipeline.description))
+        self.node("description", cdata(_pipeline.text))
         self.node("lastBuildDate", date2rfc822(datetime.now()))
         if self.node_open("image"):
             self.node("url", _pipeline.favicon_url)

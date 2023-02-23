@@ -4,10 +4,10 @@ import os
 import os.path
 from typing import Iterable
 
-from datapipeline import DataPipeline
+from page import Page
 
 
-def load_next_pipeline(adapters_folder: str) -> Iterable[DataPipeline]:
+def load_next_pipeline(adapters_folder: str) -> Iterable[Page]:
     # module_already_loaded = set()
     for root, _, files in os.walk(adapters_folder):
         for file in files:
@@ -40,7 +40,7 @@ def load_next_pipeline(adapters_folder: str) -> Iterable[DataPipeline]:
             yield from export
 
 
-def load_list_pipeline(adapters_folder: str) -> list[DataPipeline]:
+def load_list_pipeline(adapters_folder: str) -> list[Page]:
     return list(load_next_pipeline(adapters_folder))
 
 

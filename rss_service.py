@@ -4,13 +4,13 @@ from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # from rssfeed import RSSFeed
-from datapipeline import DataPipeline
+from page import Page
 from generator import HTMLGenerator, XMLGenerator
 from utils import date2rfc822
 
 
 class RequestHandler(BaseHTTPRequestHandler):
-    feeds: dict[str, DataPipeline] = {}
+    feeds: dict[str, Page] = {}
 
     def server_url(self) -> str:
         server_addr = self.server.socket.getsockname()
@@ -68,7 +68,7 @@ def export2opml(feeds: list[RSSFeed], server_url: str) -> str:
                             type="rss",
                             htmlUrl=feed.page_url,
                             xmlUrl=server_url + feed.url(),
-                            description=feed.description,
+                            description=feed.text,
                         ),
                     )
     return template.end()
